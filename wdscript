@@ -1,4 +1,4 @@
 #!/bin/bash 
 echo
-python engine/main.py $1
+python engine/main.py $1.wd
 echo
