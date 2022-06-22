@@ -12,5 +12,5 @@ void entry() -> {
     print(a) # '42'
     print(700)
     print('Hello, World!')
-    print(name) # 'Connor'
+    print(name) # Connor
 }
