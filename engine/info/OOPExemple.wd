@@ -1,0 +1,45 @@
+inc 'render/window.wd'
+
+class Main {
+    int TestInt : private -> 5
+
+    string TestString : private -> 'Hello, World!'
+
+    Window TestWindow -> none       #> to be initialized later <#
+
+    constructor() -> {
+        TestString -> 'Bye, World'
+
+        TestWindow -> Window(TestString, 1920, 1080)
+    }
+
+    void Start() -> {               #> : public (optional - all methods presumed as public) <#
+        TestInt -> TestInt + 2      #> -+> Maybe future notation? <#
+
+        print(TestInt) // 7
+
+        CleanUp()
+    }
+
+    void CleanUp() : private -> {   #> this is not necessary just to show off syntax really <#
+        TestInt -> none
+        TestString -> ''
+    }
+}
+
+#> 
+ - No privacy declarations on global function (outside of a class' scope)
+
+ - entry() will get called by the language so no need to call the function 
+   manually (aslong as its spelled exactly 'entry' even all lowercase) 
+<#
+
+void entry() -> {
+    Main MainInst -> Main()
+
+    MainInst:Start()
+
+    Window WindowInst -> MainInst:TestWindow
+
+    print(WindowInst:ToString())
+}
