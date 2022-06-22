@@ -12,6 +12,11 @@ Custom Programming Language
         - FILENAME could be 'ScriptTest' if you edit the existing file
         - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript MyScript')
 - IF ON WINDOWS
-    - To execute your code run ./wdscript.bat FILENAME
-        - FILENAME could be 'ScriptTest' if you edit the existing file
-        - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript.bat MyScript')
+    - IF IN POWERSHELL
+        - To execute your code run ./wdscript.bat FILENAME
+            - FILENAME could be 'ScriptTest' if you edit the existing file
+            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript.bat MyScript')
+    - IF IN CMD
+        - To execute your code run wdscript.bat FILENAME
+            - FILENAME could be 'ScriptTest' if you edit the existing file
+            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> 'wdscript.bat MyScript')
