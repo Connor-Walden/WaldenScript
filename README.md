@@ -1,6 +1,9 @@
 # WaldenScript
 Custom Programming Language
 
+![image](https://user-images.githubusercontent.com/20080981/175036931-0fd47879-5cdf-4fad-9b56-996716a1e6b1.png)
+
+
 # Prerequisites
 - Python
 
@@ -12,6 +15,11 @@ Custom Programming Language
         - FILENAME could be 'ScriptTest' if you edit the existing file
         - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript MyScript')
 - IF ON WINDOWS
-    - To execute your code run ./wdscript.bat FILENAME
-        - FILENAME could be 'ScriptTest' if you edit the existing file
-        - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript.bat MyScript')
+    - IF IN POWERSHELL
+        - To execute your code run ./wdscript.bat FILENAME
+            - FILENAME could be 'ScriptTest' if you edit the existing file
+            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript.bat MyScript')
+    - IF IN CMD
+        - To execute your code run wdscript.bat FILENAME
+            - FILENAME could be 'ScriptTest' if you edit the existing file
+            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> 'wdscript.bat MyScript')
