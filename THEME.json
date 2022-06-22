@@ -1,0 +1,26 @@
+"editor.semanticTokenColorCustomizations": {
+    "[Default Dark+]": {
+        "enabled": true,
+        "rules": {
+            "type":  "#26A69A",
+            "namespace": "#00897B",
+            "function": "#00BCD4",
+            "variable": "#42A5F5",
+            "number": "#90A4AE",
+            "string": {
+                "foreground": "#90A4AE",
+                "italic": true
+            },
+            "comment": {
+                "foreground": "#546E7A",
+                "fontStyle": "italic"
+            },
+            "variable.readonly.defaultLibrary": "#A89F9B",
+            "macro": "#7E57C2",
+            "keyword": "#7986CB",
+            "operator": "#9575CD",
+            "type.modification": "#00897B",
+            "punctuation": "#A1887F"
+        }
+    }
+}
