@@ -111,7 +111,7 @@ class WaldenScript:
                 break
 
             if self.tokens[idx] in typeKeywords : #bug HEERREEE
-                idx += self.make_from_type(idx) 
+                idx = self.make_from_type(idx) 
 
     def make_string(self):
         string = ''
@@ -264,10 +264,6 @@ class WaldenScript:
                             idx3 = newIdx3
                             funcBody = newFuncBody
 
-                            
-                    bodyLength += 1
-                    
                 self.ast.append(['init function', typeDef, funcName, funcParams, funcBody])
-                idx += idx3 + 1      
-
-        return idx       
+                idx = idx3 + 1   
+                return idx       

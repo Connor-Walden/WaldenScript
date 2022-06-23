@@ -3,7 +3,8 @@ from wdscript import WaldenScript
 import sys
 
 defaultFuncs = [ 'out' ]
-WALDENSCRIPT_OUT_PREFIX = 'WD > '
+WALDENSCRIPT_OUT_PREFIX = '|:OUT:| > '
+ERROR_PREFIX = '|:ERR:| > '
 
 def main():
     script = WaldenScript()
@@ -47,7 +48,7 @@ def call_func(variables, functions, item, scope, params):
                                     else:
                                         print(WALDENSCRIPT_OUT_PREFIX + str(var[2]))      
                                 else:
-                                    print('RUNTIME ERROR - variable "' + item[2][0] + '" does not exist in this scope :(')
+                                    print(ERROR_PREFIX + 'variable "' + item[2][0] + '" does not exist in this scope :(')
                                     return False
 
                 if(varFound == False): # no print operation has taken place, ie numbers
@@ -82,9 +83,18 @@ def call_func(variables, functions, item, scope, params):
                         variables.append([varType, varName, varValue, funcName])
                     elif(bodyItem[0] == 'assign result of binary operation'):                        
                         varNameToUpdate = bodyItem[1]
-                        leftOperand = bodyItem[2]
 
+                        leftOperand = bodyItem[2]
                         rightOperand = bodyItem[4]
+
+
+                        for var in variables:
+                            if(var[1] == leftOperand):
+                                leftOperand = str(var[2])
+                            
+                            if(var[1] == rightOperand):
+                                rightOperand = str(var[2])
+
                         operation = bodyItem[3]
 
                         for var in variables:
@@ -108,7 +118,7 @@ def call_func(variables, functions, item, scope, params):
                                                 var[2] = left / right
                                                 break
                                         else:
-                                            print('RUNTIME ERROR - variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                                            print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
 
 
                     elif(bodyItem[0] == 'assignment'):                           
@@ -117,11 +127,11 @@ def call_func(variables, functions, item, scope, params):
 
                         for var in variables:
                             if(var[1] == varNameToUpdate): 
-                                if(var[3] == funcName):
+                                if(var[3] == funcName or varNameToUpdate in params):
                                     var[2] = value
                                     break 
                                 else:
-                                    print('RUNTIME ERROR - variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                                    print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
 
                     elif(bodyItem[0] == 'call function'):
                         if(bodyItem[1] in defaultFuncs):
@@ -143,7 +153,7 @@ def call_func(variables, functions, item, scope, params):
                                             return
 
                                 if(paramFound == False):
-                                    print('RUNTIME ERROR - variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                    print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
                                     return
                             else:
                                 if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
@@ -172,7 +182,7 @@ def call_func(variables, functions, item, scope, params):
                 break  
 
         if(funcFound == False):
-            print('RUNTIME ERROR: Method does not exist! ("' + funcName + '")')
+            print(ERROR_PREFIX + 'Method does not exist! ("' + funcName + '")')
 
 def get_left(leftOperand, variables):
     left = leftOperand

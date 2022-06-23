@@ -1,20 +1,43 @@
+
+# ---------------
+# STRUCT WORK
+# ---------------
+# struct Ayy -> {
+#    string name
+#    number myNum
+#
+#    Child child
+# }
+#
+# struct child -> {
+#     number age -> 1
+# }
+# ---------------
+
 void entry() -> {
-    number a -> 5.5
     string name -> 'Connor'
-    string secondString -> 'String2'
 
-    a -> 7.52
-    a -> a * 6
+# ---------------
+# STRUCT WORK
+# ---------------
+#    Ayy ayyData
+#
+#    ayyData.child.age -> 2
+#    ayyData.name -> 'Connors Data!'
+#
+#    out(ayyData.child.age)
+# ---------------
 
-    # name -> name + secondString - TODO: String operations
-    # number newNumber -> a + 2 - TODO: Operations when assigning a NEW variable, currently can only assign to an existing var
+# -----------------------
+# FINALISE OPERATION WORK
+# -----------------------
+#    name -> name + secondString - TODO: String operations
+#    number newNumber -> a + 2 - TODO: Operations when assigning a NEW variable, currently can only assign to an existing var
+# -----------------------
 
-    PrintStuff(a, name)
+    myFunc()
 }
 
-void PrintStuff(a, name) -> {
-    out(a)
-    out(6.5)
-    out('Hello, World!')
-    out(name)
+string myFunc() -> {
+    out('Hello, World')
 }
