@@ -154,8 +154,21 @@ def call_func(variables, functions, item, scope, params):
                                 if(call_func(variables, functions, bodyItem, funcName, []) == False):
                                     return
                             else:
-                                if(call_func(variables, functions, bodyItem, funcName, bodyItem[2]) == False):
-                                    return
+                                # get function and only accept the right params
+
+                                for func in functions:
+                                    if func[1] == bodyItem[1]:
+                                        # filter params
+
+                                        paramList = []
+
+                                        for param in func[2]:
+                                            for param2 in bodyItem[2]:
+                                                if(param == param2):
+                                                    paramList.append(param)
+
+                                        if(call_func(variables, functions, bodyItem, funcName, paramList) == False):
+                                            return
                 break  
 
         if(funcFound == False):
