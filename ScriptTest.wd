@@ -9,8 +9,12 @@ void entry() -> {
     # name -> name + secondString - TODO: String operations
     # number newNumber -> a + 2 - TODO: Operations when assigning a NEW variable, currently can only assign to an existing var
 
-    print(a) # '42'
-    print(700)
-    print('Hello, World!')
-    print(name) # Connor
+    PrintStuff(a, name)
+}
+
+void PrintStuff(a, name) -> {
+    out(a)
+    out(6.5)
+    out('Hello, World!')
+    out(name)
 }

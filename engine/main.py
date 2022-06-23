@@ -2,7 +2,7 @@ from wdscript import WaldenScript
 
 import sys
 
-defaultFuncs = [ 'print' ]
+defaultFuncs = [ 'out' ]
 WALDENSCRIPT_OUT_PREFIX = 'WD > '
 
 def main():
@@ -26,31 +26,41 @@ def main():
             if(funcName == 'entry'):
                 entryMethod = [ 'call function', funcName, [] ]
 
-        if(item[0] == 'call function'):
-            call_func(variables, functions, item)
-
     if(entryMethod != None):
-        call_func(variables, functions, entryMethod)
+        call_func(variables, functions, entryMethod, 'entry', [])
 
-def call_func(variables, functions, item):
+def call_func(variables, functions, item, scope, params):
     if(item[1] in defaultFuncs):
-        if(item[1] == 'print'):
-            if('"' not in item[2][0] and "'" not in item[2][0]):
+        if(item[1] == 'out'):
+            if('"' not in item[2][1:-1] and "'" not in item[2][0]):
                 varFound = False
 
                 for var in variables:
                     if(var[1] == item[2][0]):
-                        varFound = True
+                        for func in functions:
+                            if(func[1] == scope):
+                                if(var[3] == scope or var[1] in params):
+                                    varFound = True
 
-                        if(var[0] == 'string'):
-                            print(WALDENSCRIPT_OUT_PREFIX + var[2][1:-1])
-                        else:
-                            print(WALDENSCRIPT_OUT_PREFIX + str(var[2]))
-                
+                                    if(var[0] == 'string'):
+                                        print(WALDENSCRIPT_OUT_PREFIX + var[2][1:-1])
+                                    else:
+                                        print(WALDENSCRIPT_OUT_PREFIX + str(var[2]))      
+                                else:
+                                    print('RUNTIME ERROR - variable "' + item[2][0] + '" does not exist in this scope :(')
+                                    return False
+
                 if(varFound == False): # no print operation has taken place, ie numbers
-                    print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+                    if('"' in item[2][0] or "'" in item[2][0]):                
+                        print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                    else:
+                        print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
             else:
-                print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                    if('"' in item[2][0] or "'" in item[2][0]):                
+                        print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                    else:                
+                        print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+ 
     else:
         funcName = item[1]
 
@@ -69,7 +79,7 @@ def call_func(variables, functions, item):
                         varName = bodyItem[2]
                         varValue = bodyItem[3]
 
-                        variables.append([varType, varName, varValue])
+                        variables.append([varType, varName, varValue, funcName])
                     elif(bodyItem[0] == 'assign result of binary operation'):                        
                         varNameToUpdate = bodyItem[1]
                         leftOperand = bodyItem[2]
@@ -79,33 +89,73 @@ def call_func(variables, functions, item):
 
                         for var in variables:
                             if(var[1] == varNameToUpdate):
-                                left = get_left(leftOperand, variables)
-                                right = get_right(rightOperand, variables)
+                                for func in functions:
+                                    if(func[1] == funcName):
+                                        if(var[3] == funcName or varNameToUpdate in params):
+                                            left = get_left(leftOperand, variables)
+                                            right = get_right(rightOperand, variables)
 
-                                if(operation == 'plus'):
-                                    var[2] = left + right
-                                    break
-                                if(operation == 'minus'):
-                                    var[2] = left - right
-                                    break
-                                if(operation == 'multiply'):
-                                    var[2] = left * right
-                                    break
-                                if(operation == 'divide'):
-                                    var[2] = left / right
-                                    break
+                                            if(operation == 'plus'):
+                                                var[2] = left + right
+                                                break
+                                            if(operation == 'minus'):
+                                                var[2] = left - right
+                                                break
+                                            if(operation == 'multiply'):
+                                                var[2] = left * right
+                                                break
+                                            if(operation == 'divide'):
+                                                var[2] = left / right
+                                                break
+                                        else:
+                                            print('RUNTIME ERROR - variable "' + varNameToUpdate + '" does not exist in this scope :(')
+
 
                     elif(bodyItem[0] == 'assignment'):                           
                         varNameToUpdate = bodyItem[1]
                         value = bodyItem[2]
 
                         for var in variables:
-                            if(var[1] == varNameToUpdate):
-                                var[2] = value
-                                break 
+                            if(var[1] == varNameToUpdate): 
+                                if(var[3] == funcName):
+                                    var[2] = value
+                                    break 
+                                else:
+                                    print('RUNTIME ERROR - variable "' + varNameToUpdate + '" does not exist in this scope :(')
 
                     elif(bodyItem[0] == 'call function'):
-                        call_func(variables, functions, bodyItem)
+                        if(bodyItem[1] in defaultFuncs):
+
+                            notNumber = True
+
+                            for char in bodyItem[2][0]:
+                                if(char in '1234567890.'):
+                                    notNumber = False
+
+                            if('"' not in bodyItem[2][0] and "'" not in bodyItem[2][0] and notNumber):
+                                paramFound = False
+
+                                for param in bodyItem[2]:
+                                    if(param in params):
+                                        paramFound = True
+
+                                        if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
+                                            return
+
+                                if(paramFound == False):
+                                    print('RUNTIME ERROR - variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                    return
+                            else:
+                                if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
+                                    return
+
+                        else: # default func get scope of parent method
+                            if(len(bodyItem[2]) == 0):
+                                if(call_func(variables, functions, bodyItem, funcName, []) == False):
+                                    return
+                            else:
+                                if(call_func(variables, functions, bodyItem, funcName, bodyItem[2]) == False):
+                                    return
                 break  
 
         if(funcFound == False):

@@ -1,3 +1,9 @@
+
+typeKeywords = ['void', 'number', 'string', 'bool']
+funcKeywords = ['out']
+opKeywords = ['plus', 'minus', 'multiply', 'divide', 'larrow', 'rarrow', 'lbrace', 'rbrace', 'lparen', 'rparen']
+initKeywords = ['initialiser']
+
 class WaldenScript:
     def __init__(self):
         self.index = -1
@@ -79,6 +85,9 @@ class WaldenScript:
             elif(self.current == '}'):
                 self.tokens.append('rbrace')
                 self.advance()
+            elif(self.current == ','):
+                self.tokens.append('comma')
+                self.advance()
             elif(self.current == '"' or self.current == "'"):
                 self.make_string()
             elif(self.current in '0123456789'):
@@ -97,135 +106,12 @@ class WaldenScript:
 
         idx = 0
 
-        typeKeywords = ['void', 'number', 'string', 'bool']
-        funcKeywords = ['print']
-        opKeywords = ['plus', 'minus', 'multiply', 'divide', 'larrow', 'rarrow', 'lbrace', 'rbrace', 'lparen', 'rparen']
-        initKeywords = ['initialiser']
-
         while idx < len(self.tokens):
             if(self.tokens[idx] == 'EOF'):
                 break
 
-            if self.tokens[idx] in typeKeywords:
-                typeDef = self.tokens[idx]
-
-                if self.tokens[idx + 2] == 'lparen':
-                    funcName = self.tokens[idx + 1]
-                    funcParams = []
-                    currentTok = self.tokens[idx + 3]
-                    idx2 = idx + 3
-                    paramLength = 0
-
-                    while currentTok != 'rparen':
-                        funcParams.append(currentTok)
-                        idx2 += 1
-                        paramLength += 1
-                        currentTok = self.tokens[idx2]    
-
-                    # declared function
-                    if self.tokens[idx + 4 + paramLength] == 'initialiser':
-                        funcBody = []
-                        currentTok = self.tokens[idx + 6 + paramLength]
-                        idx3 = idx + 6 + paramLength
-                        bodyLength = 0
-
-                        while currentTok != 'rbrace':
-                            if(currentTok == 'EOF'):
-                                break
-
-                            if(currentTok in typeKeywords):
-                                newTypeDef = currentTok
-
-                                if(self.tokens[idx3 + 2] == 'initialiser'):
-                                    varName = self.tokens[idx3 + 1]
-                                    value = self.tokens[idx3 + 3]
-
-                                    funcBody.append([ 'init variable', newTypeDef, varName, value ])    
-                                    idx3 += 4
-                                    currentTok = self.tokens[idx3]
-
-                                else:
-                                    varName = self.tokens[idx3 + 1]
-                                    funcBody.append([ 'init variable', newTypeDef, varName, 'none' ])   
-                                    idx3 += 2
-                                    currentTok = self.tokens[idx3]
-                            elif(currentTok in funcKeywords):
-                                funcName2 = currentTok
-
-                                if self.tokens[idx3 + 1] == 'lparen':
-                                    funcParams2 = []
-                                    currentTok2 = self.tokens[idx3 + 2]
-                                    idx4 = idx3 + 2
-                                    paramLength2 = 0
-
-                                    while currentTok2 != 'rparen':
-                                        funcParams2.append(currentTok2)
-                                        idx4 += 1
-                                        paramLength2 += 1
-                                        currentTok2 = self.tokens[idx4]  
-
-                                    funcBody.append([ 'call function', funcName2, funcParams2 ])  
-                                    idx3 += 3 + paramLength2
-                                    currentTok = self.tokens[idx3]
-                                else:
-                                    error('Expected function parameters')
-
-                            else:
-                                identifier = currentTok
-
-                                if(self.tokens[idx3 + 1] == 'initialiser'):
-                                    value1 = self.tokens[idx3 + 2]
-
-                                    operators = ['plus', 'minus', 'multiply', 'divide']
-                                    if(self.tokens[idx3 + 3] in operators):
-                                        value2 = self.tokens[idx3 + 4]
-                                        funcBody.append([ 'assign result of binary operation', identifier, value1, self.tokens[idx3 + 3], value2 ])
-                                        idx3 += 5
-                                        currentTok = self.tokens[idx3]
-                                    else:
-                                        funcBody.append([ 'assignment', identifier, value1 ])
-                                        idx3 += 3
-                                        currentTok = self.tokens[idx3]
-                                    
-                            bodyLength += 1
-                            
-                        self.ast.append(['init function', typeDef, funcName, funcParams, funcBody])
-                        idx += 7 + paramLength + bodyLength 
-            elif self.tokens[idx] not in funcKeywords and self.tokens[idx] not in opKeywords and \
-            self.tokens[idx] not in initKeywords and '"' not in self.tokens[idx] and \
-            self.tokens[idx] not in '0123456789' and self.tokens[idx + 1] not in ['plus', 'minus', 'multiply', 'divide']:
-                funcName3 = self.tokens[idx]
-
-                operators = ['plus', 'minus', 'multiply', 'divide']
-
-                if self.tokens[idx + 1] == 'lparen':
-                    funcParams3 = []
-                    currentTok3 = self.tokens[idx + 2]
-                    idx5 = idx + 2
-                    paramLength3 = 0
-
-                    while currentTok3 != 'rparen':
-                        funcParams3.append(currentTok3)
-                        idx5 += 1
-                        paramLength3 += 1
-                        currentTok3 = self.tokens[idx5]  
-
-                    self.ast.append([ 'call function', funcName3, funcParams3 ])  
-                    idx += 4 + paramLength3
-
-                elif(self.tokens[idx + 1] == 'initialiser'):
-                    value1 = self.tokens[idx + 2]
-                    identifier = self.tokens[idx + 1]
-
-                    if(self.tokens[idx + 3] in operators):
-                        value2 = self.tokens[idx + 4]
-                        self.ast.append([ 'assign result of binary operation', identifier, value1, self.tokens[idx + 3], value2 ])
-                        idx += 5
-                    else:
-                        self.ast.append([ 'assignment', identifier, value1 ])
-                        idx += 3
-
-            idx += 1
+            if self.tokens[idx] in typeKeywords : #bug HEERREEE
+                idx += self.make_from_type(idx) 
 
     def make_string(self):
         string = ''
@@ -261,4 +147,127 @@ class WaldenScript:
             self.advance()
 
         self.tokens.append(letter)
+    
+    def make_variable(self, currentTok, idx3, funcBody):
+        newTypeDef = currentTok
 
+        if(self.tokens[idx3 + 2] == 'initialiser'):
+            varName = self.tokens[idx3 + 1]
+            value = self.tokens[idx3 + 3]
+
+            funcBody.append([ 'init variable', newTypeDef, varName, value ])    
+            idx3 += 4
+            currentTok = self.tokens[idx3]
+
+        else:
+            varName = self.tokens[idx3 + 1]
+            funcBody.append([ 'init variable', newTypeDef, varName, 'none' ])   
+            idx3 += 2
+            currentTok = self.tokens[idx3]
+
+        return (currentTok, idx3, funcBody)
+
+    def call_function(self, currentTok, idx3, funcBody):
+        funcName2 = currentTok
+
+        if self.tokens[idx3 + 1] == 'lparen':
+            funcParams2 = []
+            currentTok2 = self.tokens[idx3 + 2]
+            idx4 = idx3 + 2
+            paramLength2 = 0
+
+            while currentTok2 != 'rparen':
+                if(currentTok2 != 'comma'):
+                    funcParams2.append(currentTok2)
+                    idx4 += 1
+                    paramLength2 += 1
+                    currentTok2 = self.tokens[idx4]  
+                else:
+                    idx4 += 1
+                    paramLength2 += 1
+                    currentTok2 = self.tokens[idx4]  
+
+            funcBody.append([ 'call function', funcName2, funcParams2 ])  
+            idx3 += 3 + paramLength2
+            currentTok = self.tokens[idx3]
+        else:
+            print('Expected function parameters')
+
+        return (currentTok, idx3, funcBody)
+
+    def make_from_type(self, idx):
+        typeDef = self.tokens[idx]
+
+        if self.tokens[idx + 2] == 'lparen':
+            funcName = self.tokens[idx + 1]
+            funcParams = []
+            currentTok = self.tokens[idx + 3]
+            idx2 = idx + 3
+            paramLength = 0
+
+            while currentTok != 'rparen':
+                if(currentTok != 'comma'):
+                    funcParams.append(currentTok)
+                    idx2 += 1
+                    paramLength += 1
+                    currentTok = self.tokens[idx2]    
+                else:
+                    idx2 += 1
+                    paramLength += 1
+                    currentTok = self.tokens[idx2]    
+
+            # declared function
+            if self.tokens[idx + 4 + paramLength] == 'initialiser':
+                funcBody = []
+                currentTok = self.tokens[idx + 6 + paramLength]
+                idx3 = idx + 6 + paramLength
+                bodyLength = 0
+
+                while currentTok != 'rbrace':
+                    if(currentTok == 'EOF'):
+                        break
+
+                    if(currentTok in typeKeywords):
+                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(currentTok, idx3, funcBody)
+
+                        currentTok = newCurrentTok
+                        idx3 = newIdx3
+                        funcBody = newFuncBody
+                        
+                    elif(currentTok in funcKeywords):
+                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody)
+
+                        currentTok = newCurrentTok
+                        idx3 = newIdx3
+                        funcBody = newFuncBody
+
+                    else:
+                        identifier = currentTok
+                        
+                        if(self.tokens[idx3 + 1] == 'initialiser'):
+                            value1 = self.tokens[idx3 + 2]
+
+                            operators = ['plus', 'minus', 'multiply', 'divide']
+                            if(self.tokens[idx3 + 3] in operators):
+                                value2 = self.tokens[idx3 + 4]
+                                funcBody.append([ 'assign result of binary operation', identifier, value1, self.tokens[idx3 + 3], value2 ])
+                                idx3 += 5
+                                currentTok = self.tokens[idx3]
+                            else:
+                                funcBody.append([ 'assignment', identifier, value1 ])
+                                idx3 += 3
+                                currentTok = self.tokens[idx3]
+                        else:
+                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody)
+
+                            currentTok = newCurrentTok
+                            idx3 = newIdx3
+                            funcBody = newFuncBody
+
+                            
+                    bodyLength += 1
+                    
+                self.ast.append(['init function', typeDef, funcName, funcParams, funcBody])
+                idx += idx3 + 1      
+
+        return idx       
