@@ -15,29 +15,31 @@
 # ---------------
 
 void entry() -> {
-    string name -> 'Connor'
+    string Name -> 'Connor'
+    const string SecondString -> ' Walden'
 
 # ---------------
 # STRUCT WORK
 # ---------------
-#    Ayy ayyData
+#    Ayy AyyData
 #
-#    ayyData.child.age -> 2
-#    ayyData.name -> 'Connors Data!'
+#    AyyData.Child.Age -> 2
+#    AyyData.Name -> 'Connors Data!'
 #
-#    out(ayyData.child.age)
+#    out(AyyData.Child.Age)
 # ---------------
+
+    Name -> Name + SecondString
 
 # -----------------------
 # FINALISE OPERATION WORK
 # -----------------------
-#    name -> name + secondString - TODO: String operations
-#    number newNumber -> a + 2 - TODO: Operations when assigning a NEW variable, currently can only assign to an existing var
+#    number NewNumber -> A + 2 - TODO: Operations when assigning a NEW variable, currently can only assign to an existing var
 # -----------------------
 
-    myFunc()
+    MyFunc(Name)
 }
 
-string myFunc() -> {
-    out('Hello, World')
+string MyFunc(Name) -> {
+    out(Name)
 }

@@ -110,8 +110,8 @@ class WaldenScript:
             if(self.tokens[idx] == 'EOF'):
                 break
 
-            if self.tokens[idx] in typeKeywords : #bug HEERREEE
-                idx = self.make_from_type(idx) 
+            elif self.tokens[idx] in typeKeywords :
+                idx = self.make_from_type(idx, False) 
 
     def make_string(self):
         string = ''
@@ -148,20 +148,20 @@ class WaldenScript:
 
         self.tokens.append(letter)
     
-    def make_variable(self, currentTok, idx3, funcBody):
+    def make_variable(self, currentTok, idx3, funcBody, constant):
         newTypeDef = currentTok
 
         if(self.tokens[idx3 + 2] == 'initialiser'):
             varName = self.tokens[idx3 + 1]
             value = self.tokens[idx3 + 3]
 
-            funcBody.append([ 'init variable', newTypeDef, varName, value ])    
+            funcBody.append([ 'init variable', newTypeDef, varName, value, constant ])    
             idx3 += 4
             currentTok = self.tokens[idx3]
 
         else:
             varName = self.tokens[idx3 + 1]
-            funcBody.append([ 'init variable', newTypeDef, varName, 'none' ])   
+            funcBody.append([ 'init variable', newTypeDef, varName, 'none', constant ])   
             idx3 += 2
             currentTok = self.tokens[idx3]
 
@@ -195,7 +195,7 @@ class WaldenScript:
 
         return (currentTok, idx3, funcBody)
 
-    def make_from_type(self, idx):
+    def make_from_type(self, idx, constant):
         typeDef = self.tokens[idx]
 
         if self.tokens[idx + 2] == 'lparen':
@@ -227,8 +227,17 @@ class WaldenScript:
                     if(currentTok == 'EOF'):
                         break
 
-                    if(currentTok in typeKeywords):
-                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(currentTok, idx3, funcBody)
+                    if(currentTok == 'const'):
+                        idx3 += 1
+                        currentTok = self.tokens[idx3]
+
+                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(currentTok, idx3, funcBody, True)
+
+                        currentTok = newCurrentTok
+                        idx3 = newIdx3
+                        funcBody = newFuncBody
+                    elif(currentTok in typeKeywords):
+                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(currentTok, idx3, funcBody, False)
 
                         currentTok = newCurrentTok
                         idx3 = newIdx3

@@ -79,14 +79,14 @@ def call_func(variables, functions, item, scope, params):
                         varType = bodyItem[1]
                         varName = bodyItem[2]
                         varValue = bodyItem[3]
+                        varConst = bodyItem[4]
 
-                        variables.append([varType, varName, varValue, funcName])
+                        variables.append([varType, varName, varValue, funcName, varConst])
                     elif(bodyItem[0] == 'assign result of binary operation'):                        
                         varNameToUpdate = bodyItem[1]
 
                         leftOperand = bodyItem[2]
                         rightOperand = bodyItem[4]
-
 
                         for var in variables:
                             if(var[1] == leftOperand):
@@ -102,23 +102,53 @@ def call_func(variables, functions, item, scope, params):
                                 for func in functions:
                                     if(func[1] == funcName):
                                         if(var[3] == funcName or varNameToUpdate in params):
-                                            left = get_left(leftOperand, variables)
-                                            right = get_right(rightOperand, variables)
+                                            if(var[4] == False):
+                                                left = get_left(leftOperand, variables)
+                                                right = get_right(rightOperand, variables)
 
-                                            if(operation == 'plus'):
-                                                var[2] = left + right
-                                                break
-                                            if(operation == 'minus'):
-                                                var[2] = left - right
-                                                break
-                                            if(operation == 'multiply'):
-                                                var[2] = left * right
-                                                break
-                                            if(operation == 'divide'):
-                                                var[2] = left / right
-                                                break
+                                                isStr = False
+
+                                                if('"' in left[-1] or "'" in left[-1]):
+                                                    isStr = True
+                                                    left = left[:-1]
+
+                                                if('"' in right[0] or "'" in right[0]):
+                                                    isStr = True
+                                                    right = right[1:]
+
+                                                if(isStr):
+                                                    if(operation == 'plus'):
+                                                        var[2] = left + right
+                                                        break
+                                                    if(operation == 'minus'):
+                                                        print(ERROR_PREFIX + 'cannot perform a "-" operation on strings')
+                                                        return False
+                                                    if(operation == 'multiply'):
+                                                        print(ERROR_PREFIX + 'cannot perform a "*" operation on strings')
+                                                        return False
+                                                    if(operation == 'divide'):
+                                                        print(ERROR_PREFIX + 'cannot perform a "/" operation on strings')
+                                                        return False
+                                                else:
+                                                    if(operation == 'plus'):
+                                                        var[2] = left + right
+                                                        break
+                                                    if(operation == 'minus'):
+                                                        var[2] = left - right
+                                                        break
+                                                    if(operation == 'multiply'):
+                                                        var[2] = left * right
+                                                        break
+                                                    if(operation == 'divide'):
+                                                        var[2] = left / right
+                                                        break
+                                            else:
+                                                print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
+                                                return False
+                                            
                                         else:
                                             print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                                            return False
 
 
                     elif(bodyItem[0] == 'assignment'):                           
@@ -128,10 +158,15 @@ def call_func(variables, functions, item, scope, params):
                         for var in variables:
                             if(var[1] == varNameToUpdate): 
                                 if(var[3] == funcName or varNameToUpdate in params):
-                                    var[2] = value
+                                    if(var[4] == False):
+                                        var[2] = value
+                                    else:
+                                        print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
+                                        return False
                                     break 
                                 else:
                                     print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                                    return False
 
                     elif(bodyItem[0] == 'call function'):
                         if(bodyItem[1] in defaultFuncs):
@@ -154,7 +189,7 @@ def call_func(variables, functions, item, scope, params):
 
                                 if(paramFound == False):
                                     print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
-                                    return
+                                    return False
                             else:
                                 if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
                                     return
@@ -186,46 +221,30 @@ def call_func(variables, functions, item, scope, params):
 
 def get_left(leftOperand, variables):
     left = leftOperand
-    found = False
+
     for var in variables:
         if(var[1] == leftOperand):
-            found = True
-
-            if('.' in var[2]):
+            if('"' in var[2] or "'" in var[2]):
+                left = str(var[2])
+            elif('.' in var[2]):
                 left = float(var[2])
             else:
                 left = int(var[2])
-    
-    if(found == False):
-        if('.' in leftOperand):
-            left = float(leftOperand)
-        else:
-            left = int(leftOperand)
 
     return left
 
 def get_right(rightOperand, variables):
     right = rightOperand
-    found = False
-    if('.' in rightOperand):
-        right = float(rightOperand)
-    else:
-        right = int(rightOperand)
-
-    if(found == False):
-        if('.' in rightOperand):
-            right = float(rightOperand)
-        else:
-            right = int(rightOperand)
 
     for var in variables:
         if(var[1] == rightOperand):
-            if('.' in var[2]):
+            if('"' in var[2] or "'" in var[2]):
+                right = str(var[2])
+            elif('.' in var[2]):
                 right = float(var[2])
             else:
                 right = int(var[2])
-
+                
     return right
-
 
 main()
