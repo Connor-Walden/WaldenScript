@@ -149,11 +149,12 @@ def call_func(variables, functions, item, scope, params):
                                     return
                             else:
                                 # get function and only accept the right params
+                                foundFunc = False
 
                                 for func in functions:
                                     if func[1] == bodyItem[1]:
                                         # filter params
-
+                                        foundFunc = True
                                         paramList = []
 
                                         for param in func[2]:
@@ -163,6 +164,9 @@ def call_func(variables, functions, item, scope, params):
 
                                         if(call_func(variables, functions, bodyItem, funcName, paramList) == False):
                                             return
+                                        
+                                if(foundFunc == False):
+                                    print(ERROR_PREFIX + 'Method does not exist! ("' + bodyItem[1] + '")')
                 break  
 
         if(funcFound == False):
