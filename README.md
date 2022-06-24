@@ -22,3 +22,5 @@ Custom Programming Language
         - To execute your code run wdscript.bat FILENAME
             - FILENAME could be 'ScriptTest' if you edit the existing file
             - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> 'wdscript.bat MyScript')
+            
+Please note that you can use directories when running the compiler agaisnt your file! (./wdscript src/MyScript [mac]) / (./wdscript.bat src/MyScript [windows])
