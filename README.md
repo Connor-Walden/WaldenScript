@@ -1,8 +1,7 @@
 # WaldenScript
 Custom Programming Language
 
-![image](https://user-images.githubusercontent.com/20080981/175036931-0fd47879-5cdf-4fad-9b56-996716a1e6b1.png)
-
+![image](https://user-images.githubusercontent.com/20080981/175465045-e68ee66a-bc5b-4275-bc73-6b4173a2de6f.png)
 
 # Prerequisites
 - Python
