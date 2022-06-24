@@ -1,0 +1,9 @@
+void entry() -> {
+    const string Final -> 'Connor Walden'
+
+    MyFunc(Final)
+}
+
+string MyFunc(Final) -> {
+    out(Final)
+}

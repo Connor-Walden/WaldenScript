@@ -2,7 +2,7 @@ from wdscript import WaldenScript
 
 import sys
 
-defaultFuncs = [ 'out' ]
+defaultFuncs = [ 'out', 'in' ]
 WALDENSCRIPT_OUT_PREFIX = '|:OUT:| > '
 ERROR_PREFIX = '|:ERR:| > '
 
@@ -28,8 +28,10 @@ def main():
                 entryMethod = [ 'call function', funcName, [] ]
 
     if(entryMethod != None):
-        call_func(variables, functions, entryMethod, 'entry', [])
-
+        call_func(variables, functions, entryMethod, 'entry', []) # entry - only way to begin a WD program
+    else:
+        print(ERROR_PREFIX + 'NO ENTRY >:( | please add a [void entry() -> {}] to your program to begin!')
+   
 def call_func(variables, functions, item, scope, params):
     if(item[1] in defaultFuncs):
         if(item[1] == 'out'):
@@ -82,74 +84,21 @@ def call_func(variables, functions, item, scope, params):
                         varConst = bodyItem[4]
 
                         variables.append([varType, varName, varValue, funcName, varConst])
-                    elif(bodyItem[0] == 'assign result of binary operation'):                        
-                        varNameToUpdate = bodyItem[1]
-
-                        leftOperand = bodyItem[2]
-                        rightOperand = bodyItem[4]
-
-                        for var in variables:
-                            if(var[1] == leftOperand):
-                                leftOperand = str(var[2])
-                            
-                            if(var[1] == rightOperand):
-                                rightOperand = str(var[2])
-
-                        operation = bodyItem[3]
-
-                        for var in variables:
-                            if(var[1] == varNameToUpdate):
-                                for func in functions:
-                                    if(func[1] == funcName):
-                                        if(var[3] == funcName or varNameToUpdate in params):
-                                            if(var[4] == False):
-                                                left = get_left(leftOperand, variables)
-                                                right = get_right(rightOperand, variables)
-
-                                                isStr = False
-
-                                                if('"' in left[-1] or "'" in left[-1]):
-                                                    isStr = True
-                                                    left = left[:-1]
-
-                                                if('"' in right[0] or "'" in right[0]):
-                                                    isStr = True
-                                                    right = right[1:]
-
-                                                if(isStr):
-                                                    if(operation == 'plus'):
-                                                        var[2] = left + right
-                                                        break
-                                                    if(operation == 'minus'):
-                                                        print(ERROR_PREFIX + 'cannot perform a "-" operation on strings')
-                                                        return False
-                                                    if(operation == 'multiply'):
-                                                        print(ERROR_PREFIX + 'cannot perform a "*" operation on strings')
-                                                        return False
-                                                    if(operation == 'divide'):
-                                                        print(ERROR_PREFIX + 'cannot perform a "/" operation on strings')
-                                                        return False
-                                                else:
-                                                    if(operation == 'plus'):
-                                                        var[2] = left + right
-                                                        break
-                                                    if(operation == 'minus'):
-                                                        var[2] = left - right
-                                                        break
-                                                    if(operation == 'multiply'):
-                                                        var[2] = left * right
-                                                        break
-                                                    if(operation == 'divide'):
-                                                        var[2] = left / right
-                                                        break
-                                            else:
-                                                print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
-                                                return False
-                                            
-                                        else:
-                                            print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
-                                            return False
-
+                    elif(bodyItem[0] == 'init variable to result of binary operation'):
+                        varType = bodyItem[1]
+                        varName = bodyItem[2]
+                        varValue = bodyItem[3]
+                        varOp = bodyItem[4]
+                        varValue2 = bodyItem[5]
+                        varConst = bodyItem[6]
+                        
+                        variable = [varType, varName, varValue, funcName, varConst]
+                        variables.append(variable)
+                        
+                        bodyItemForBinOp = ['assign result of binary operation', varName, varValue, varOp, varValue2, False]
+                        binary_operation(variables, functions, bodyItemForBinOp, funcName, params, False)
+                    elif(bodyItem[0] == 'assign result of binary operation'):       
+                        binary_operation(variables, functions, bodyItem, funcName, params, True)
 
                     elif(bodyItem[0] == 'assignment'):                           
                         varNameToUpdate = bodyItem[1]
@@ -218,6 +167,73 @@ def call_func(variables, functions, item, scope, params):
 
         if(funcFound == False):
             print(ERROR_PREFIX + 'Method does not exist! ("' + funcName + '")')
+
+def binary_operation(variables, functions, bodyItem, funcName, params, enforceConstant):
+    varNameToUpdate = bodyItem[1]
+    leftOperand = bodyItem[2]
+    rightOperand = bodyItem[4]
+
+    for var in variables:
+        if(var[1] == leftOperand):
+            leftOperand = str(var[2])
+        
+        if(var[1] == rightOperand):
+            rightOperand = str(var[2])
+
+    operation = bodyItem[3]
+
+    for var in variables:
+        if(var[1] == varNameToUpdate):
+            for func in functions:
+                if(func[1] == funcName):
+                    if(var[3] == funcName or varNameToUpdate in params):
+                        if(var[4] == False or enforceConstant == False):
+                            left = get_left(leftOperand, variables)
+                            right = get_right(rightOperand, variables)
+
+                            isStr = False
+
+                            if('"' in left[-1] or "'" in left[-1]):
+                                isStr = True
+                                left = left[:-1]
+
+                            if('"' in right[0] or "'" in right[0]):
+                                isStr = True
+                                right = right[1:]
+
+                            if(isStr):
+                                if(operation == 'plus'):
+                                    var[2] = left + right
+                                    break
+                                if(operation == 'minus'):
+                                    print(ERROR_PREFIX + 'cannot perform a "-" operation on strings')
+                                    return False
+                                if(operation == 'multiply'):
+                                    print(ERROR_PREFIX + 'cannot perform a "*" operation on strings')
+                                    return False
+                                if(operation == 'divide'):
+                                    print(ERROR_PREFIX + 'cannot perform a "/" operation on strings')
+                                    return False
+                            else:
+                                if(operation == 'plus'):
+                                    var[2] = left + right
+                                    break
+                                if(operation == 'minus'):
+                                    var[2] = left - right
+                                    break
+                                if(operation == 'multiply'):
+                                    var[2] = left * right
+                                    break
+                                if(operation == 'divide'):
+                                    var[2] = left / right
+                                    break
+                        else:
+                            print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
+                            return False
+                        
+                    else:
+                        print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                        return False
 
 def get_left(leftOperand, variables):
     left = leftOperand

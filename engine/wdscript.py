@@ -154,9 +154,14 @@ class WaldenScript:
         if(self.tokens[idx3 + 2] == 'initialiser'):
             varName = self.tokens[idx3 + 1]
             value = self.tokens[idx3 + 3]
-
-            funcBody.append([ 'init variable', newTypeDef, varName, value, constant ])    
-            idx3 += 4
+            
+            if(self.tokens[idx3+4] in ['plus', 'minus', 'divide', 'multiply']):
+                funcBody.append([ 'init variable to result of binary operation', newTypeDef, varName, value, self.tokens[idx3+4], self.tokens[idx3+5], constant ])    
+                idx3 += 6
+            else:
+                funcBody.append([ 'init variable', newTypeDef, varName, value, constant ])    
+                idx3 += 4
+                
             currentTok = self.tokens[idx3]
 
         else:
@@ -190,8 +195,6 @@ class WaldenScript:
             funcBody.append([ 'call function', funcName2, funcParams2 ])  
             idx3 += 3 + paramLength2
             currentTok = self.tokens[idx3]
-        else:
-            print('Expected function parameters')
 
         return (currentTok, idx3, funcBody)
 
