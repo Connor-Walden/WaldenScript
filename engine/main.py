@@ -173,22 +173,20 @@ def call_func(variables, functions, item, scope, params):
                                                     paramList.append(param)
 
                                         allValid = False
-                                        for parameter in paramList:
+                                        for param in paramList:
                                             for var in variables:
-                                                if var[1] == parameter:
+                                                if var[1] == param:
                                                     if(var[3] == funcName or var[1] in params):
                                                         allValid = True
-                                                    
-                                        if(bodyItem[2][1] == 'colon'):
-                                            # mapped parameter
-                                            leftParam = bodyItem[2][0]
-                                            rightParam = bodyItem[2][2]
-                                            
-                                            for var in variables:
-                                                if var[1] == rightParam:
-                                                    variables.append([var[0], leftParam, var[2], var[3], var[4]])    
-                                                    allValid = True    
-                                        
+                                        idx = 0
+                                        while idx < len(bodyItem[2]):
+                                            if(bodyItem[2][idx+1] == 'colon'):
+                                                map_var(variables, bodyItem[2][idx], bodyItem[2][idx+2])
+                                                idx += 3
+                                                allValid = True
+                                            else:
+                                                idx += 1
+                                                
                                         if allValid:    
                                             if(call_func(variables, functions, bodyItem, funcName, paramList) == False):
                                                 return
@@ -201,6 +199,11 @@ def call_func(variables, functions, item, scope, params):
 
         if(funcFound == False):
             print(ERROR_PREFIX + 'Method does not exist! ("' + funcName + '")')
+
+def map_var(variables, left, right):
+    for var in variables:
+        if var[1] == right:
+            variables.append([var[0], left, var[2], var[3], var[4]])    
 
 def binary_operation(variables, functions, bodyItem, funcName, params, enforceConstant):
     varNameToUpdate = bodyItem[1]
