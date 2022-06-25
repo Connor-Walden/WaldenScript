@@ -1,9 +1,9 @@
 void entry() -> {
-    const string Final -> 'Connor Walden'
+    const string FinalString -> 'Third'
 
-    MyFunc(Final)
+    ThirdFunction(text: FinalString)
 }
 
-string MyFunc(Final) -> {
-    out(Final)
+void ThirdFunction(text) -> {
+    out(text)
 }

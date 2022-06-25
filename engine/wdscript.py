@@ -85,6 +85,9 @@ class WaldenScript:
             elif(self.current == '}'):
                 self.tokens.append('rbrace')
                 self.advance()
+            elif(self.current == ':'):
+                self.tokens.append('colon')
+                self.advance()
             elif(self.current == ','):
                 self.tokens.append('comma')
                 self.advance()
@@ -172,7 +175,7 @@ class WaldenScript:
 
         return (currentTok, idx3, funcBody)
 
-    def call_function(self, currentTok, idx3, funcBody):
+    def call_function(self, currentTok, idx3, funcBody, funcName):
         funcName2 = currentTok
 
         if self.tokens[idx3 + 1] == 'lparen':
@@ -192,7 +195,7 @@ class WaldenScript:
                     paramLength2 += 1
                     currentTok2 = self.tokens[idx4]  
 
-            funcBody.append([ 'call function', funcName2, funcParams2 ])  
+            funcBody.append([ 'call function', funcName2, funcParams2, funcName ])  
             idx3 += 3 + paramLength2
             currentTok = self.tokens[idx3]
 
@@ -247,7 +250,7 @@ class WaldenScript:
                         funcBody = newFuncBody
                         
                     elif(currentTok in funcKeywords):
-                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody)
+                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody, funcName)
 
                         currentTok = newCurrentTok
                         idx3 = newIdx3
@@ -270,7 +273,7 @@ class WaldenScript:
                                 idx3 += 3
                                 currentTok = self.tokens[idx3]
                         else:
-                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody)
+                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(currentTok, idx3, funcBody, funcName)
 
                             currentTok = newCurrentTok
                             idx3 = newIdx3

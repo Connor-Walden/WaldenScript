@@ -3,8 +3,8 @@ from wdscript import WaldenScript
 import sys
 
 defaultFuncs = [ 'out', 'in' ]
-WALDENSCRIPT_OUT_PREFIX = '|:OUT:| > '
-ERROR_PREFIX = '|:ERR:| > '
+WALDENSCRIPT_OUT_PREFIX = 'OUT > '
+ERROR_PREFIX = 'ERR > '
 
 def main():
     script = WaldenScript()
@@ -35,14 +35,14 @@ def main():
 def call_func(variables, functions, item, scope, params):
     if(item[1] in defaultFuncs):
         if(item[1] == 'out'):
-            if('"' not in item[2][1:-1] and "'" not in item[2][0]):
+            if('"' not in item[2][0] and "'" not in item[2][0]):
                 varFound = False
 
                 for var in variables:
                     if(var[1] == item[2][0]):
                         for func in functions:
-                            if(func[1] == scope):
-                                if(var[3] == scope or var[1] in params):
+                            if(func[1] == var[3]):  
+                                if(var[3] == item[3] or var[1] in params):
                                     varFound = True
 
                                     if(var[0] == 'string'):
@@ -59,11 +59,14 @@ def call_func(variables, functions, item, scope, params):
                     else:
                         print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
             else:
-                    if('"' in item[2][0] or "'" in item[2][0]):                
-                        print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
-                    else:                
-                        print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
- 
+                for func in functions:
+                    if(func[1] == scope):
+                        if(var[3] == scope or var[1] in params):
+                            if('"' in item[2][0] or "'" in item[2][0]):                
+                                print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                            else:                
+                                print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+                                
     else:
         funcName = item[1]
 
@@ -129,12 +132,19 @@ def call_func(variables, functions, item, scope, params):
                             if('"' not in bodyItem[2][0] and "'" not in bodyItem[2][0] and notNumber):
                                 paramFound = False
 
-                                for param in bodyItem[2]:
-                                    if(param in params):
+                                if len(params) == 0:
+                                    if(funcName == bodyItem[3]):
                                         paramFound = True
 
-                                        if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
+                                        if(call_func(variables, functions, bodyItem, scope, []) == False):
                                             return
+                                else:      
+                                    for param in bodyItem[2]:
+                                        if(param in params):
+                                            paramFound = True
+                                            
+                                            if(call_func(variables, functions, bodyItem, scope, bodyItem[2]) == False):
+                                                return
 
                                 if(paramFound == False):
                                     print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
@@ -162,9 +172,29 @@ def call_func(variables, functions, item, scope, params):
                                                 if(param == param2):
                                                     paramList.append(param)
 
-                                        if(call_func(variables, functions, bodyItem, funcName, paramList) == False):
-                                            return
+                                        allValid = False
+                                        for parameter in paramList:
+                                            for var in variables:
+                                                if var[1] == parameter:
+                                                    if(var[3] == funcName or var[1] in params):
+                                                        allValid = True
+                                                    
+                                        if(bodyItem[2][1] == 'colon'):
+                                            # mapped parameter
+                                            leftParam = bodyItem[2][0]
+                                            rightParam = bodyItem[2][2]
+                                            
+                                            for var in variables:
+                                                if var[1] == rightParam:
+                                                    variables.append([var[0], leftParam, var[2], var[3], var[4]])    
+                                                    allValid = True    
                                         
+                                        if allValid:    
+                                            if(call_func(variables, functions, bodyItem, funcName, paramList) == False):
+                                                return
+                                        else:
+                                            print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                            return False
                                 if(foundFunc == False):
                                     print(ERROR_PREFIX + 'Method does not exist! ("' + bodyItem[1] + '")')
                 break  
@@ -179,10 +209,10 @@ def binary_operation(variables, functions, bodyItem, funcName, params, enforceCo
 
     for var in variables:
         if(var[1] == leftOperand):
-            leftOperand = str(var[2])
+            leftOperand = var[2]
         
         if(var[1] == rightOperand):
-            rightOperand = str(var[2])
+            rightOperand = var[2]
 
     operation = bodyItem[3]
 
@@ -196,12 +226,11 @@ def binary_operation(variables, functions, bodyItem, funcName, params, enforceCo
                             right = get_right(rightOperand, variables)
 
                             isStr = False
-
-                            if('"' in left[-1] or "'" in left[-1]):
+                            if('"' in str(left)[-1] or "'" in str(left)[-1]):
                                 isStr = True
                                 left = left[:-1]
 
-                            if('"' in right[0] or "'" in right[0]):
+                            if('"' in str(right)[0] or "'" in str(right)[0]):
                                 isStr = True
                                 right = right[1:]
 
@@ -219,17 +248,30 @@ def binary_operation(variables, functions, bodyItem, funcName, params, enforceCo
                                     print(ERROR_PREFIX + 'cannot perform a "/" operation on strings')
                                     return False
                             else:
+                                
+                                numLeft = None
+                                if '.' in var[2]:
+                                    numLeft = float(left)    
+                                else:
+                                    numLeft = int(left)   
+                                    
+                                numRight = None
+                                if '.' in var[2]:
+                                    numRight = float(right)    
+                                else:
+                                    numRight = int(right)                                 
+                                
                                 if(operation == 'plus'):
-                                    var[2] = left + right
+                                    var[2] = numLeft + numRight
                                     break
                                 if(operation == 'minus'):
-                                    var[2] = left - right
+                                    var[2] = numLeft - numRight
                                     break
                                 if(operation == 'multiply'):
-                                    var[2] = left * right
+                                    var[2] = numLeft * numRight
                                     break
                                 if(operation == 'divide'):
-                                    var[2] = left / right
+                                    var[2] = numLeft / numRight
                                     break
                         else:
                             print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
