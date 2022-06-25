@@ -1,13 +1,9 @@
 void entry() -> {
-    const string text -> 'Third'
-    const number FinalNumber -> 1
-    number bNUm -> 55.3
-
-    ThirdFunction(text, A: FinalNumber, C: bNUm)
+    ThirdFunction(var: 'Hello World')
 }
 
-void ThirdFunction(text, C, A) -> {
-    out(text)
-    out(A)
-    out(C)
+void ThirdFunction(var) -> {
+    out(var)
 }
+
+

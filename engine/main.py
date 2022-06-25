@@ -181,7 +181,7 @@ def call_func(variables, functions, item, scope, params):
                                         idx = 0
                                         while idx < len(bodyItem[2]):
                                             if(bodyItem[2][idx+1] == 'colon'):
-                                                map_var(variables, bodyItem[2][idx], bodyItem[2][idx+2])
+                                                map_var(variables, bodyItem[2][idx], bodyItem[2][idx+2], funcName)
                                                 idx += 3
                                                 allValid = True
                                             else:
@@ -200,11 +200,25 @@ def call_func(variables, functions, item, scope, params):
         if(funcFound == False):
             print(ERROR_PREFIX + 'Method does not exist! ("' + funcName + '")')
 
-def map_var(variables, left, right):
+def map_var(variables, left, right, scope):
+    mapped = False
     for var in variables:
         if var[1] == right:
             variables.append([var[0], left, var[2], var[3], var[4]])    
-
+            mapped = True
+            
+    if(mapped == False):
+        if('"' in right or "'" in right):
+            variables.append(['string', left, right, scope, True])
+        else:
+            isNumber = True
+            for char in right:
+                if char not in '0123456789.':
+                    isNumber = False
+                    
+            if(isNumber):
+                variables.append(['number', left, right, scope, True])
+            
 def binary_operation(variables, functions, bodyItem, funcName, params, enforceConstant):
     varNameToUpdate = bodyItem[1]
     leftOperand = bodyItem[2]
