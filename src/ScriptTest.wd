@@ -1,9 +1,26 @@
 void entry() -> {
-    ThirdFunction(var: 'Hello World')
+    const string Mapped -> 'Mapped Parameter'
+    const number num -> 12.6
+
+    ThirdFunction(
+        var: Mapped, 
+        num, 
+        numtwo: 770000, 
+        stringtwo: 'Hello There...'
+    )
 }
 
-void ThirdFunction(var) -> {
+void ThirdFunction(var, num, numtwo, stringtwo) -> {
+    out(numtwo)
+    out(stringtwo)
     out(var)
+    out(num)
 }
+
+
+
+
+
+
 
 
