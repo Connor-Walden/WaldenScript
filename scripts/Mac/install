@@ -1,0 +1,4 @@
+#!/bin/bash 
+echo
+brew install python
+echo

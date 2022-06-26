@@ -1,6 +1,5 @@
-
 typeKeywords = ['void', 'number', 'string', 'bool']
-funcKeywords = ['out']
+funcKeywords = ['out', 'in']
 opKeywords = ['plus', 'minus', 'multiply', 'divide', 'larrow', 'rarrow', 'lbrace', 'rbrace', 'lparen', 'rparen']
 initKeywords = ['initialiser']
 
@@ -113,7 +112,7 @@ class WaldenScript:
             if(self.tokens[idx] == 'EOF'):
                 break
 
-            elif self.tokens[idx] in typeKeywords :
+            elif self.tokens[idx] in typeKeywords:
                 idx = self.make_from_type(idx, False) 
 
     def make_string(self):
@@ -161,6 +160,10 @@ class WaldenScript:
             if(self.tokens[idx3+4] in ['plus', 'minus', 'divide', 'multiply']):
                 funcBody.append([ 'init variable to result of binary operation', newTypeDef, varName, value, self.tokens[idx3+4], self.tokens[idx3+5], constant ])    
                 idx3 += 6
+            elif(self.tokens[idx3+3] == 'in'):
+                inText = self.tokens[idx3+5][1:-1]
+                funcBody.append(['init variable to result of user input', newTypeDef, varName, inText, constant ])
+                idx3 += 7
             else:
                 funcBody.append([ 'init variable', newTypeDef, varName, value, constant ])    
                 idx3 += 4
@@ -227,10 +230,13 @@ class WaldenScript:
                 funcBody = []
                 currentTok = self.tokens[idx + 6 + paramLength]
                 idx3 = idx + 6 + paramLength
-                bodyLength = 0
 
                 while currentTok != 'rbrace':
                     if(currentTok == 'EOF'):
+                        break
+                    
+                    if(currentTok == 'in'):
+                        print('ERR > A string variable needs to be initialised to the result of in()!')
                         break
 
                     if(currentTok == 'const'):

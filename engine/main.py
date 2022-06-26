@@ -1,9 +1,11 @@
 from wdscript import WaldenScript
+from six.moves import input
 
 import sys
 
 defaultFuncs = [ 'out', 'in' ]
-WALDENSCRIPT_OUT_PREFIX = 'OUT > '
+WALDENSCRIPT_OUT_PREFIX = ''
+WALDENSCRIPT_IN_PREFIX = ''
 ERROR_PREFIX = 'ERR > '
 
 def main():
@@ -35,41 +37,7 @@ def main():
    
 def call_func(variables, functions, mapped, item, scope, params):
     if(item[1] in defaultFuncs):
-        if(item[1] == 'out'):
-            if('"' not in item[2][0] and "'" not in item[2][0]):
-                varFound = False
-                
-                allVariables = variables + mapped
-
-                for var in allVariables:
-                    if(var[1] == item[2][0]):
-                        for func in functions:
-                            if(func[1] == var[3]):  
-                                if(var[3] == item[3] or var[1] in params):
-                                    varFound = True
-
-                                    if(var[0] == 'string'):
-                                        print(WALDENSCRIPT_OUT_PREFIX + var[2][1:-1])
-                                    else:
-                                        print(WALDENSCRIPT_OUT_PREFIX + str(var[2]))      
-                                else:
-                                    print(ERROR_PREFIX + 'variable "' + item[2][0] + '" does not exist in this scope :(')
-                                    return False
-
-                if(varFound == False): # no print operation has taken place, ie numbers
-                    if('"' in item[2][0] or "'" in item[2][0]):                
-                        print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
-                    else:
-                        print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
-            else:
-                for func in functions:
-                    if(func[1] == scope):
-                        if(var[3] == scope or var[1] in params):
-                            if('"' in item[2][0] or "'" in item[2][0]):                
-                                print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
-                            else:                
-                                print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
-                                
+        call_default_func(variables, functions, mapped, item, scope, params)
     else:
         funcName = item[1]
 
@@ -78,139 +46,183 @@ def call_func(variables, functions, mapped, item, scope, params):
         for func in functions:
             if(func[1] == funcName):
                 funcFound = True
-
-                funcParams = func[2]
                 funcBody = func[3]
 
-                for bodyItem in funcBody:
-                    if(bodyItem[0] == 'init variable'):
-                        varType = bodyItem[1]
-                        varName = bodyItem[2]
-                        varValue = bodyItem[3]
-                        varConst = bodyItem[4]
-
-                        exists = False
-                        for var in variables:
-                            if var[1] == varName:
-                                exists = True
-                          
-                        if(exists == False):        
-                            variables.append([varType, varName, varValue, funcName, varConst])
-                        else:
-                            print(ERROR_PREFIX + 'Variable already exists... ' + varName)
-                            return False
-                    elif(bodyItem[0] == 'init variable to result of binary operation'):
-                        varType = bodyItem[1]
-                        varName = bodyItem[2]
-                        varValue = bodyItem[3]
-                        varOp = bodyItem[4]
-                        varValue2 = bodyItem[5]
-                        varConst = bodyItem[6]
-                        
-                        variable = [varType, varName, varValue, funcName, varConst]
-                        variables.append(variable)
-                        
-                        bodyItemForBinOp = ['assign result of binary operation', varName, varValue, varOp, varValue2, False]
-                        binary_operation(variables, functions, bodyItemForBinOp, funcName, params, False)
-                    elif(bodyItem[0] == 'assign result of binary operation'):       
-                        binary_operation(variables, functions, bodyItem, funcName, params, True)
-
-                    elif(bodyItem[0] == 'assignment'):                           
-                        varNameToUpdate = bodyItem[1]
-                        value = bodyItem[2]
-
-                        for var in variables:
-                            if(var[1] == varNameToUpdate): 
-                                if(var[3] == funcName or varNameToUpdate in params):
-                                    if(var[4] == False):
-                                        var[2] = value
-                                    else:
-                                        print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
-                                        return False
-                                    break 
-                                else:
-                                    print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
-                                    return False
-
-                    elif(bodyItem[0] == 'call function'):
-                        if(bodyItem[1] in defaultFuncs):
-
-                            notNumber = True
-
-                            for char in bodyItem[2][0]:
-                                if(char in '1234567890.'):
-                                    notNumber = False
-
-                            if('"' not in bodyItem[2][0] and "'" not in bodyItem[2][0] and notNumber):
-                                paramFound = False
-
-                                if len(params) == 0:
-                                    if(funcName == bodyItem[3]):
-                                        paramFound = True
-
-                                        if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):
-                                            return
-                                else:      
-                                    for param in bodyItem[2]:
-                                        if(param in params):
-                                            paramFound = True
-                                            
-                                            if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
-                                                return
-
-                                if(paramFound == False):
-                                    print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
-                                    return False
-                            else:
-                                if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
-                                    return
-
-                        else: # default func get scope of parent method
-                            if(len(bodyItem[2]) == 0):
-                                if(call_func(variables, functions, mapped, bodyItem, funcName, []) == False):
-                                    return
-                            else:
-                                # get function and only accept the right params
-                                foundFunc = False
-
-                                for func in functions:
-                                    if func[1] == bodyItem[1]:
-                                        # filter params
-                                        foundFunc = True
-                                        paramList = []
-
-                                        for param in func[2]:
-                                            for param2 in bodyItem[2]:
-                                                if(param == param2):
-                                                    paramList.append(param)
-
-                                        allValid = False
-                                        for param in paramList:
-                                            for var in variables:
-                                                if var[1] == param:
-                                                    if(var[3] == funcName or var[1] in params):
-                                                        allValid = True
-                                        idx = 0
-                                        while idx < len(bodyItem[2]) - 1:
-                                            if(bodyItem[2][idx+1] == 'colon'):
-                                                map_var(variables, mapped, bodyItem[2][idx], bodyItem[2][idx+2], funcName)
-                                                idx += 3
-                                                allValid = True
-                                            else:
-                                                idx += 1
-                                                
-                                        if allValid:    
-                                            if(call_func(variables, functions, mapped, bodyItem, funcName, paramList) == False):
-                                                return
-                                        else:
-                                            print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
-                                            return False
-                                if(foundFunc == False):
-                                    print(ERROR_PREFIX + 'Method does not exist! ("' + bodyItem[1] + '")')
-                break  
-
+                interpret_body(variables, functions, mapped, funcName, funcBody, scope, params)
+                break
         if(funcFound == False):
             print(ERROR_PREFIX + 'Method does not exist! ("' + funcName + '")')
+
+def call_default_func(variables, functions, mapped, item, scope, params):
+    if(item[1] == 'out'):
+        if('"' not in item[2][0] and "'" not in item[2][0]):
+            varFound = False
+            
+            allVariables = variables + mapped
+
+            for var in allVariables:
+                if(var[1] == item[2][0]):
+                    for func in functions:
+                        if(func[1] == var[3]):  
+                            if(var[3] == item[3] or var[1] in params):
+                                varFound = True
+
+                                if(var[0] == 'string'):
+                                    print(WALDENSCRIPT_OUT_PREFIX + var[2][1:-1])
+                                else:
+                                    print(WALDENSCRIPT_OUT_PREFIX + str(var[2]))      
+                            else:
+                                print(ERROR_PREFIX + 'variable "' + item[2][0] + '" does not exist in this scope :(')
+                                return False
+
+            if(varFound == False): # no print operation has taken place, ie numbers
+                if('"' in item[2][0] or "'" in item[2][0]):                
+                    print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                else:
+                    print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+        else:
+            for func in functions:
+                if(func[1] == scope):
+                    if(var[3] == scope or var[1] in params):
+                        if('"' in item[2][0] or "'" in item[2][0]):                
+                            print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
+                        else:                
+                            print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+                            
+def interpret_body(variables, functions, mapped, funcName, funcBody, scope, params):
+    for bodyItem in funcBody:
+        if(bodyItem[0] == 'init variable'):
+            varType = bodyItem[1]
+            varName = bodyItem[2]
+            varValue = bodyItem[3]
+            varConst = bodyItem[4]
+
+            exists = False
+            for var in variables:
+                if var[1] == varName:
+                    exists = True
+                
+            if(exists == False):        
+                variables.append([varType, varName, varValue, funcName, varConst])
+            else:
+                print(ERROR_PREFIX + 'Variable already exists... ' + varName)
+                return False
+        elif(bodyItem[0] == 'init variable to result of binary operation'):
+            varType = bodyItem[1]
+            varName = bodyItem[2]
+            varValue = bodyItem[3]
+            varOp = bodyItem[4]
+            varValue2 = bodyItem[5]
+            varConst = bodyItem[6]
+            
+            variable = [varType, varName, varValue, funcName, varConst]
+            variables.append(variable)
+            
+            bodyItemForBinOp = ['assign result of binary operation', varName, varValue, varOp, varValue2, False]
+            binary_operation(variables, functions, bodyItemForBinOp, funcName, params, False)
+        elif(bodyItem[0] == 'assign result of binary operation'):       
+            binary_operation(variables, functions, bodyItem, funcName, params, True)
+        elif(bodyItem[0] == 'init variable to result of user input'):
+            varType = bodyItem[1]
+            varName = bodyItem[2]
+            varText = bodyItem[3]
+            varConst = bodyItem[4]
+            
+            uIn = '"' + input(WALDENSCRIPT_IN_PREFIX + varText + ': ') + '"'
+
+            variable = [varType, varName, uIn, funcName, varConst]
+            variables.append(variable)                     
+        elif(bodyItem[0] == 'assignment'):                           
+            varNameToUpdate = bodyItem[1]
+            value = bodyItem[2]
+
+            for var in variables:
+                if(var[1] == varNameToUpdate): 
+                    if(var[3] == funcName or varNameToUpdate in params):
+                        if(var[4] == False):
+                            var[2] = value
+                        else:
+                            print(ERROR_PREFIX + 'cannot edit a constant variable: ' + varNameToUpdate)
+                            return False
+                        break 
+                    else:
+                        print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
+                        return False
+
+        elif(bodyItem[0] == 'call function'):
+            if(bodyItem[1] in defaultFuncs):
+
+                notNumber = True
+
+                for char in bodyItem[2][0]:
+                    if(char in '1234567890.'):
+                        notNumber = False
+
+                if('"' not in bodyItem[2][0] and "'" not in bodyItem[2][0] and notNumber):
+                    paramFound = False
+
+                    for param in bodyItem[2]:
+                        if(param in params):
+                            paramFound = True
+                            
+                            if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
+                                return
+
+                    if(paramFound == False):
+                        if(funcName == bodyItem[3]):
+                            paramFound = True
+                            
+                            if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):
+                                return
+                        else:
+                            print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                            return False
+                else:
+                    if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
+                        return
+
+            else: # default func get scope of parent method
+                if(len(bodyItem[2]) == 0):
+                    if(call_func(variables, functions, mapped, bodyItem, funcName, []) == False):
+                        return
+                else:
+                    # get function and only accept the right params
+                    foundFunc = False
+
+                    for func in functions:
+                        if func[1] == bodyItem[1]:
+                            # filter params
+                            foundFunc = True
+                            paramList = []
+
+                            for param in func[2]:
+                                for param2 in bodyItem[2]:
+                                    if(param == param2):
+                                        paramList.append(param)
+
+                            allValid = False
+                            for param in paramList:
+                                for var in variables:
+                                    if var[1] == param:
+                                        if(var[3] == funcName or var[1] in params):
+                                            allValid = True
+                            idx = 0
+                            while idx < len(bodyItem[2]) - 1:
+                                if(bodyItem[2][idx+1] == 'colon'):
+                                    map_var(variables, mapped, bodyItem[2][idx], bodyItem[2][idx+2], funcName)
+                                    idx += 3
+                                    allValid = True
+                                else:
+                                    idx += 1
+                                    
+                            if allValid:    
+                                if(call_func(variables, functions, mapped, bodyItem, funcName, paramList) == False):
+                                    return
+                            else:
+                                print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                return False
+                    if(foundFunc == False):
+                        print(ERROR_PREFIX + 'Method does not exist! ("' + bodyItem[1] + '")')
 
 def map_var(variables, mapped, left, right, scope):
     isVar = False
