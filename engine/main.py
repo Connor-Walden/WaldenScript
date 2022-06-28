@@ -3,7 +3,7 @@ from six.moves import input
 
 import sys
 
-defaultFuncs = [ 'out', 'in' ]
+defaultFuncs = [ 'out', 'in', 'if' ]
 WALDENSCRIPT_OUT_PREFIX = ''
 WALDENSCRIPT_IN_PREFIX = ''
 ERROR_PREFIX = 'ERR > '
@@ -82,12 +82,23 @@ def call_default_func(variables, functions, mapped, item, scope, params):
                     print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
         else:
             for func in functions:
-                if(func[1] == scope):
-                    if(var[3] == scope or var[1] in params):
-                        if('"' in item[2][0] or "'" in item[2][0]):                
-                            print(WALDENSCRIPT_OUT_PREFIX + item[2][0][1:-1])
-                        else:                
-                            print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0]))
+                if(func[1] == scope):         
+                    print(WALDENSCRIPT_OUT_PREFIX + str(item[2][0][1:-1]))
+    elif(item[1] == 'if'):
+        value1 = item[2][0]
+        conditional = item[2][1]
+        value2 = item[2][2]
+        
+        for var in variables:
+            if(var[1] == item[2][0]):
+                value1 = var[2]
+            elif(var[1] == item[2][2]):
+                value2 = var[2]
+    
+        if(conditional == 'equals'):   
+            if(value1 == value2):
+                interpret_body(variables, functions, mapped, item[3], item[4], item[3], [])
+                
                             
 def interpret_body(variables, functions, mapped, funcName, funcBody, scope, params):
     for bodyItem in funcBody:
@@ -119,9 +130,9 @@ def interpret_body(variables, functions, mapped, funcName, funcBody, scope, para
             variables.append(variable)
             
             bodyItemForBinOp = ['assign result of binary operation', varName, varValue, varOp, varValue2, False]
-            binary_operation(variables, functions, bodyItemForBinOp, funcName, params, False)
+            binary_operation(variables, functions, mapped, bodyItemForBinOp, funcName, params, False)
         elif(bodyItem[0] == 'assign result of binary operation'):       
-            binary_operation(variables, functions, bodyItem, funcName, params, True)
+            binary_operation(variables, functions, mapped, bodyItem, funcName, params, True)
         elif(bodyItem[0] == 'init variable to result of user input'):
             varType = bodyItem[1]
             varName = bodyItem[2]
@@ -165,18 +176,29 @@ def interpret_body(variables, functions, mapped, funcName, funcBody, scope, para
                         if(param in params):
                             paramFound = True
                             
-                            if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
-                                return
+                    if(paramFound):
+                        if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
+                            return
 
                     if(paramFound == False):
-                        if(funcName == bodyItem[3]):
-                            paramFound = True
-                            
-                            if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):
-                                return
+                        if(bodyItem[1] == 'if'):
+                            if(funcName == scope):
+                                paramFound = True
+                                
+                                if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):
+                                    return
+                            else:
+                                print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                return False
                         else:
-                            print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
-                            return False
+                            if(funcName == bodyItem[3]):
+                                paramFound = True
+                                
+                                if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):
+                                    return
+                            else:             
+                                print(ERROR_PREFIX + 'variable "' + bodyItem[2][0] + '" does not exist in this scope :(')
+                                return False
                 else:
                     if(call_func(variables, functions, mapped, bodyItem, scope, bodyItem[2]) == False):
                         return
@@ -185,7 +207,7 @@ def interpret_body(variables, functions, mapped, funcName, funcBody, scope, para
                 if(len(bodyItem[2]) == 0):
                     if(call_func(variables, functions, mapped, bodyItem, funcName, []) == False):
                         return
-                else:
+                else: 
                     # get function and only accept the right params
                     foundFunc = False
 
@@ -243,12 +265,19 @@ def map_var(variables, mapped, left, right, scope):
             if(isNumber):
                 mapped.append(['number', left, right, scope, True])
             
-def binary_operation(variables, functions, bodyItem, funcName, params, enforceConstant):
+def binary_operation(variables, functions, mapped, bodyItem, funcName, params, enforceConstant):
     varNameToUpdate = bodyItem[1]
     leftOperand = bodyItem[2]
     rightOperand = bodyItem[4]
 
     for var in variables:
+        if(var[1] == leftOperand):
+            leftOperand = var[2]
+        
+        if(var[1] == rightOperand):
+            rightOperand = var[2]
+            
+    for var in mapped:
         if(var[1] == leftOperand):
             leftOperand = var[2]
         
@@ -263,8 +292,9 @@ def binary_operation(variables, functions, bodyItem, funcName, params, enforceCo
                 if(func[1] == funcName):
                     if(var[3] == funcName or varNameToUpdate in params):
                         if(var[4] == False or enforceConstant == False):
-                            left = get_left(leftOperand, variables)
-                            right = get_right(rightOperand, variables)
+  
+                            left = get_left(leftOperand, variables, mapped)
+                            right = get_right(rightOperand, variables, mapped)
 
                             isStr = False
                             if('"' in str(left)[-1] or "'" in str(left)[-1]):
@@ -322,31 +352,51 @@ def binary_operation(variables, functions, bodyItem, funcName, params, enforceCo
                         print(ERROR_PREFIX + 'variable "' + varNameToUpdate + '" does not exist in this scope :(')
                         return False
 
-def get_left(leftOperand, variables):
+def get_left(leftOperand, variables, mapped):
     left = leftOperand
 
+    varObj = None
+
     for var in variables:
-        if(var[1] == leftOperand):
-            if('"' in var[2] or "'" in var[2]):
-                left = str(var[2])
-            elif('.' in var[2]):
-                left = float(var[2])
-            else:
-                left = int(var[2])
+        if(var[1] == left):
+            varObj = var
+            
+    if(varObj == None):
+        for map in mapped:
+            if(map[1] == left):
+                varObj = map
+            
+    if(varObj != None):
+        if('"' in varObj[2] or "'" in varObj[2]):
+            left = str(varObj[2])
+        elif('.' in varObj[2]):
+            left = float(varObj[2])
+        else:
+            left = int(varObj[2])
 
     return left
 
-def get_right(rightOperand, variables):
+def get_right(rightOperand, variables, mapped):
     right = rightOperand
+
+    varObj = None
 
     for var in variables:
         if(var[1] == rightOperand):
-            if('"' in var[2] or "'" in var[2]):
-                right = str(var[2])
-            elif('.' in var[2]):
-                right = float(var[2])
-            else:
-                right = int(var[2])
+            varObj = var
+            
+    if(varObj == None):
+        for map in mapped:
+            if(map[1] == rightOperand):
+                varObj = map
+            
+    if(varObj != None):
+        if('"' in varObj[2] or "'" in varObj[2]):
+            right = str(varObj[2])
+        elif('.' in varObj[2]):
+            right = float(varObj[2])
+        else:
+            right = int(varObj[2])
                 
     return right
 

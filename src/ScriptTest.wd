@@ -1,8 +1,25 @@
 void entry() -> {
-    string uIn -> in('What is your name')
-    GetUserInput(text: uIn)
+    string uIn -> in('Hello, What is your name?')
+    PrintConcatenatedStr(one: 'Hello ', two: uIn, three: ', welcome to the wdscript game!')
+
+    string uInTwo -> in('A Stranger approaches! Do you interact with them?')
+
+    if(uInTwo = 'Y') -> {
+        out('You decided to interact with the stranger...')
+        out('')
+    }
+
+    if(uInTwo = 'N') -> {
+        out('Good choice my friend')
+        out('')
+    }
+
 }
 
-void GetUserInput(text) -> {
-    out(text)
+void PrintConcatenatedStr(one, two, three) -> {
+    string returnStatement -> one + two
+    string returnStatementtwo -> returnStatement + three
+    
+    out(returnStatementtwo)
+    out('')
 }

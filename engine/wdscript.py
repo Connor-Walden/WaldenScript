@@ -1,5 +1,5 @@
 typeKeywords = ['void', 'number', 'string', 'bool']
-funcKeywords = ['out', 'in']
+funcKeywords = ['out', 'in', 'if']
 opKeywords = ['plus', 'minus', 'multiply', 'divide', 'larrow', 'rarrow', 'lbrace', 'rbrace', 'lparen', 'rparen']
 initKeywords = ['initialiser']
 
@@ -59,7 +59,9 @@ class WaldenScript:
                     self.advance()
                 else:
                     self.tokens.append('minus')
-
+            elif(self.current == '='):
+                self.tokens.append('equals')
+                self.advance()
             elif(self.current == '*'):
                 self.tokens.append('multiply')
                 self.advance()
@@ -198,8 +200,77 @@ class WaldenScript:
                     paramLength2 += 1
                     currentTok2 = self.tokens[idx4]  
 
-            funcBody.append([ 'call function', funcName2, funcParams2, funcName ])  
-            idx3 += 3 + paramLength2
+            curIdx = idx3 + 3 + paramLength2
+            curTok = self.tokens[curIdx]
+            funcBody2 = []
+            
+            if(self.tokens[idx4 + 1] == 'initialiser'):
+                curIdx = idx4 + 3
+                curTok = self.tokens[curIdx]
+                
+                while curTok != 'rbrace':
+                    if(curTok == 'EOF'):
+                        break
+                    
+                    if(curTok == 'in'):
+                        print('ERR > A string variable needs to be initialised to the result of in()!')
+                        break
+
+                    if(curTok == 'const'):
+                        curIdx += 1
+                        curTok = self.tokens[curIdx]
+
+                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(curTok, curIdx, funcBody2, True)
+
+                        curTok = newCurrentTok
+                        curIdx = newIdx3
+                        funcBody2 = newFuncBody
+                    elif(curTok in typeKeywords):
+                        (newCurrentTok, newIdx3, newFuncBody) = self.make_variable(curTok, curIdx, funcBody2, False)
+
+                        curTok = newCurrentTok
+                        curIdx = newIdx3
+                        funcBody2 = newFuncBody
+                        
+                    elif(curTok in funcKeywords):
+                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName)
+
+                        curTok = newCurrentTok
+                        curIdx = newIdx3
+                        funcBody2 = newFuncBody
+
+                    else:
+                        identifier = curTok
+                        
+                        if(self.tokens[curIdx + 1] == 'initialiser'):
+                            value1 = self.tokens[curIdx + 2]
+
+                            operators = ['plus', 'minus', 'multiply', 'divide']
+                            if(self.tokens[curIdx + 3] in operators):
+                                value2 = self.tokens[curIdx + 4]
+                                funcBody2.append([ 'assign result of binary operation', identifier, value1, self.tokens[curIdx + 3], value2 ])
+                                curIdx += 5
+                                curTok = self.tokens[curIdx]
+                            else:
+                                funcBody2.append([ 'assignment', identifier, value1 ])
+                                curIdx += 3
+                                curTok = self.tokens[curIdx]
+                        else:
+                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName)
+
+                            curIdx = newIdx3
+                            curTok = newCurrentTok
+                            funcBody2 = newFuncBody
+                
+                curIdx += 1
+                curTok = self.tokens[curIdx]
+           
+            if(len(funcBody2) > 0):
+                funcBody.append([ 'call function', funcName2, funcParams2, funcName, funcBody2 ])  
+            else:
+                funcBody.append([ 'call function', funcName2, funcParams2, funcName ])  
+                
+            idx3 = curIdx
             currentTok = self.tokens[idx3]
 
         return (currentTok, idx3, funcBody)
@@ -288,3 +359,4 @@ class WaldenScript:
                 self.ast.append(['init function', typeDef, funcName, funcParams, funcBody])
                 idx = idx3 + 1   
                 return idx       
+      
