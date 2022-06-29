@@ -1,0 +1,5 @@
+#!/bin/bash 
+echo
+./scripts/Mac/install
+./scripts/Mac/wdscript ./src/ScriptTest
+echo

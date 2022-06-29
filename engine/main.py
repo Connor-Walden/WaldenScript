@@ -182,7 +182,23 @@ def interpret_body(variables, functions, mapped, funcName, funcBody, scope, para
 
                     if(paramFound == False):
                         if(bodyItem[1] == 'if'):
-                            if(funcName == scope):
+                            
+                            inScope = False
+                            
+                            for var in variables:
+                                if var[1] == bodyItem[2][0]:
+                                    if(funcName == var[3]):
+                                        inScope = True
+                            
+                            for var in mapped:
+                                if var[1] == bodyItem[2][0]:
+                                    if(funcName == var[3]):
+                                        inScope = True
+                                        
+                            if funcName == scope:
+                                inScope = True
+                                        
+                            if(inScope):
                                 paramFound = True
                                 
                                 if(call_func(variables, functions, mapped, bodyItem, scope, []) == False):

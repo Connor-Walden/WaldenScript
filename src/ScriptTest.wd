@@ -2,18 +2,20 @@ void entry() -> {
     string uIn -> in('Hello, What is your name?')
     PrintConcatenatedStr(one: 'Hello ', two: uIn, three: ', welcome to the wdscript game!')
 
-    string uInTwo -> in('A Stranger approaches! Do you interact with them?')
-
+    # The stranger encounter
+    string uInTwo -> in('A Stranger approaches! Do you interact with them? (Y, N)')
     if(uInTwo = 'Y') -> {
-        out('You decided to interact with the stranger...')
-        out('')
+        InteractWithStranger()
     }
 
     if(uInTwo = 'N') -> {
         out('Good choice my friend')
         out('')
+
+        ReadNote()
     }
 
+    # The journey through the valley
 }
 
 void PrintConcatenatedStr(one, two, three) -> {
@@ -22,4 +24,49 @@ void PrintConcatenatedStr(one, two, three) -> {
     
     out(returnStatementtwo)
     out('')
+}
+
+void InteractWithStranger() -> {
+    out('You decided to interact with the stranger...')
+    out('')
+
+    out('They offer you a gift...')
+    out('')
+
+    string answer -> in('Do you accept the gift? (Y, N)')
+
+    if(answer = 'Y') -> {
+        out('Game over...')
+        out('')
+    }
+
+    if(answer = 'N') -> {
+        out('You narrowly escape a knife lunge, be careful who you trust!')
+        out('')
+    }
+
+    out('The stranger departs...')
+}
+
+void ReadNote() -> {
+    string ans -> in('As the stranger departs he drops a note, pick it up? (Y, N)')
+
+    if(ans = 'Y') -> {
+        out('')
+        out('On the note it reads:')
+        out('')
+        out('At the end of valleys sight')
+        out('')
+        out('Lies a quite dangerous blight')
+        out('')
+        out('If you find yourself drawing near')
+        out('')
+        out('You will know it, face your fears...')
+        out('')
+    }
+
+    if(ans = 'N') -> {
+        out('')
+        out('The note slips from your mind.')
+    }
 }

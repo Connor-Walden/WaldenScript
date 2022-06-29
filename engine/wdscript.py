@@ -233,7 +233,7 @@ class WaldenScript:
                         funcBody2 = newFuncBody
                         
                     elif(curTok in funcKeywords):
-                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName)
+                        (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName2)
 
                         curTok = newCurrentTok
                         curIdx = newIdx3
@@ -256,7 +256,7 @@ class WaldenScript:
                                 curIdx += 3
                                 curTok = self.tokens[curIdx]
                         else:
-                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName)
+                            (newCurrentTok, newIdx3, newFuncBody) = self.call_function(curTok, curIdx, funcBody2, funcName2)
 
                             curIdx = newIdx3
                             curTok = newCurrentTok
