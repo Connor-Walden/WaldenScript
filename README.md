@@ -16,4 +16,9 @@ Custom Programming Language
     - Open './run.bat' in text editor and confirm your script name is in the run script
     - In the terminal: execute './run.bat'
             
-Please note that you can use directories when running the interpreter agaisnt your file! (./wdscript src/MyScript [mac]) / (./wdscript.bat src/MyScript [windows]) and that the script name will tell the interpreter to look for an entry() method in that file but you do not need to include the name of other files in your project as long as they don't contain an entry of their own.
+Please note that you can use directories when running the interpreter agaisnt your file! The script name will tell the interpreter to look for an entry() method in that file but you do not need to include the name of other files in your project as long as they don't contain an entry of their own.
+
+INFO!
+- This will install python on your system. I thought about making it a bundled download but instead opted to do a script install before your run a file in wdscript. Unfortunately python is a pre-requisite for this! 
+
+Thanks everyone :)
