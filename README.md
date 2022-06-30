@@ -5,9 +5,6 @@ Custom Programming Language
 <img width="475" alt="Screen Shot 2022-06-30 at 2 02 55 pm" src="https://user-images.githubusercontent.com/20080981/175465045-e68ee66a-bc5b-4275-bc73-6b4173a2de6f.png">
 <img width="388" alt="Screen Shot 2022-06-25 at 11 05 55 am" src="https://user-images.githubusercontent.com/20080981/175753532-87ba7610-fa36-4b83-9ebd-32836cd98d5f.png">
 
-# Prerequisites
-- Python
-
 # Usage
 - Clone Repo
 - Either edit existing code file or create a new code file with the extension .wd
