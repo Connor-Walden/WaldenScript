@@ -1,5 +1,5 @@
 @echo off
 echo.
-./scripts/Windows/install.bat
-./scripts/Windows/wdscript.bat ./src/ScriptTest
+call ./scripts/Windows/install.bat
+call ./scripts/Windows/wdscript.bat ./src/ScriptTest
 echo.
