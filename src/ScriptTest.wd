@@ -4,10 +4,10 @@ void entry() -> {
 
     # The stranger encounter
     string uInTwo -> in('A Stranger approaches! Do you interact with them? (Y, N)')
+    
     if(uInTwo = 'Y') -> {
         InteractWithStranger()
     }
-
     if(uInTwo = 'N') -> {
         out('Good choice my friend')
         out('')
