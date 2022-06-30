@@ -7,19 +7,13 @@ Custom Programming Language
 
 # Usage
 - Clone Repo
-- Either edit existing code file or create a new code file with the extension .wd
+- In 'src/', either edit existing code file or create a new code file with the extension .wd 
+- Open terminal in root directory
 - IF ON MAC
-    - To execute your code run ./wdscript FILENAME
-        - FILENAME could be 'ScriptTest' if you edit the existing file
-        - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript MyScript')
+    - Open './run' in text editor and confirm your script name is in the run script
+    - In the terminal: execute './run'
 - IF ON WINDOWS
-    - IF IN POWERSHELL
-        - To execute your code run ./wdscript.bat FILENAME
-            - FILENAME could be 'ScriptTest' if you edit the existing file
-            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> './wdscript.bat MyScript')
-    - IF IN CMD
-        - To execute your code run wdscript.bat FILENAME
-            - FILENAME could be 'ScriptTest' if you edit the existing file
-            - FILENAME could be the name of your own file without the extension (ie 'MyScript.wd' -> 'wdscript.bat MyScript')
+    - Open './run.bat' in text editor and confirm your script name is in the run script
+    - In the terminal: execute './run.bat'
             
-Please note that you can use directories when running the compiler agaisnt your file! (./wdscript src/MyScript [mac]) / (./wdscript.bat src/MyScript [windows])
+Please note that you can use directories when running the interpreter agaisnt your file! (./wdscript src/MyScript [mac]) / (./wdscript.bat src/MyScript [windows]) and that the script name will tell the interpreter to look for an entry() method in that file but you do not need to include the name of other files in your project as long as they don't contain an entry of their own.
